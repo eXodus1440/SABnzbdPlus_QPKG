@@ -45,18 +45,19 @@ fi
 
 case "$1" in
   start)
-    ENABLED=$(/sbin/getcfg $QPKG_NAME Enable -u -d FALSE -f $CONF)
-    if [ "$ENABLED" != "TRUE" ]; then
-        echo "$QPKG_NAME is disabled."
-        exit 1
-    fi
+    #ENABLED=$(/sbin/getcfg $QPKG_NAME Enable -u -d FALSE -f $CONF)
+    #if [ "$ENABLED" != "TRUE" ]; then
+    #    echo "$QPKG_NAME is disabled."
+    #    exit 1
+    #fi
 
     if [ -f ${QPKG_DIR}/sabnzbd-${WEBUI_PORT}.pid ]; then
       echo "$QPKG_NAME is currently running or hasn't been shutdown properly. Please stop it before starting a new instance."
-      exit 0
+      exit 1
     fi
   
-    echo "Creating Library links ..."
+    echo "Creating symlinks ..."
+    [ -d $QPKG_DIR}/.sabnzbd/Downloads ] || /bin/ln -sf ${BASE}/${PUBLIC_SHARE}/Downloads $QPKG_DIR}/.sabnzbd/Downloads
     [ -d /root/.sabnzbd ] || /bin/ln -sf ${QPKG_DIR}/.sabnzbd /root/.sabnzbd
     [ -d /root/Downloads ] || /bin/ln -sf ${BASE}/${PUBLIC_SHARE}/Downloads /root/Downloads
     [ -d /root/nzb ] || /bin/ln -sf ${BASE}/${PUBLIC_SHARE}/nzb /root/nzb
@@ -71,6 +72,9 @@ case "$1" in
       # Start on port 8085 by default
       /opt/bin/python2.6 ${QPKG_DIR}/SABnzbd.py -s 0.0.0.0:8085 -b 0 --pid ${QPKG_DIR} &
     fi
+
+    # Enabling SABnzbdPlus within qpkg.conf
+    /sbin/setcfg $QPKG_NAME Enable TRUE -f $CONF
     ;;
 
   stop)
@@ -79,7 +83,6 @@ case "$1" in
       if [ `ps ax | grep -v grep | grep -c ${PID}` = '0' ]; then
         echo "$QPKG_NAME not running, cleaning up ${QPKG_DIR}/sabnzbd-${WEBUI_PORT}.pid ..."
         /bin/rm -f ${QPKG_DIR}/sabnzbd-$WEBUI_PORT.pid
-        exit 1
       else
         echo "Stopping $QPKG_NAME ..."
         if [ -n ${WEBUI_PASS} ]; then
@@ -113,7 +116,8 @@ case "$1" in
     /bin/sleep 2
     
     # Clean up symlinks in event that SABnzbdPlus was shutdown outside QPKG manager
-    echo "Removing Library links ..."
+    echo "Removing symlinks ..."
+    if [ -d $QPKG_DIR}/.sabnzbd/Downloads ]; then /bin/rm -rf $QPKG_DIR}/.sabnzbd/Downloads ; fi
     if [ -d /root/.sabnzbd ]; then /bin/rm -rf /root/.sabnzbd ; fi
     if [ -d /root/Downloads ]; then /bin/rm -rf /root/Downloads ; fi
     if [ -d /root/nzb ]; then /bin/rm -rf /root/nzb ; fi

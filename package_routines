@@ -96,15 +96,15 @@ SYS_QPKG_SERVICE_ENABLED="TRUE"
 #
 
 # Find the Public share
-PUBLIC_SHARE=`/sbin/getcfg SHARE_DEF defPublic -d Public -f /etc/config/def_share.info`
+PUBLIC_SHARE=`$CMD_GETCFG SHARE_DEF defPublic -d Public -f /etc/config/def_share.info`
 
 # Determine BASE installation location according to smb.conf
 BASE=
-publicdir=`/sbin/getcfg $PUBLIC_SHARE path -f /etc/config/smb.conf`
+publicdir=`$CMD_GETCFG $PUBLIC_SHARE path -f /etc/config/smb.conf`
 if [ ! -z $publicdir ] && [ -d $publicdir ];then
-  publicdirp1=`/bin/echo $publicdir | /bin/cut -d "/" -f 2`
-  publicdirp2=`/bin/echo $publicdir | /bin/cut -d "/" -f 3`
-  publicdirp3=`/bin/echo $publicdir | /bin/cut -d "/" -f 4`
+  publicdirp1=`$CMD_ECHO $publicdir | $CMD_CUT -d "/" -f 2`
+  publicdirp2=`$CMD_ECHO $publicdir | $CMD_CUT -d "/" -f 3`
+  publicdirp3=`$CMD_ECHO $publicdir | $CMD_CUT -d "/" -f 4`
   if [ ! -z $publicdirp1 ] && [ ! -z $publicdirp2 ] && [ ! -z $publicdirp3 ]; then
     [ -d "/${publicdirp1}/${publicdirp2}/${PUBLIC_SHARE}" ] && BASE="/${publicdirp1}/${publicdirp2}"
   fi
@@ -118,7 +118,7 @@ if [ -z $BASE ]; then
 fi
 if [ -z $BASE ] ; then
   echo "The Public share not found."
-  /sbin/write_log "[SABnzbd] The Public share not found." 1
+  $CMD_WLOG "[$QPKG_NAME] The Public share was not found." 1
   exit 1
 fi
 
@@ -134,10 +134,7 @@ fi
 #PKG_PRE_REMOVE="{
 #}"
 #
-#PKG_MAIN_REMOVE="{
-#}"
-#
-PKG_POST_REMOVE="{
+PKG_MAIN_REMOVE="{
 	# Removing folders in Public share
 	[ -d ${BASE}/${PUBLIC_SHARE}/Downloads ]; then $CMD_RM -rf ${BASE}/${PUBLIC_SHARE}/Downloads
 	[ -d ${BASE}/${PUBLIC_SHARE}/nzb ]; then $CMD_RM -rf ${BASE}/${PUBLIC_SHARE}/nzb
@@ -147,6 +144,9 @@ PKG_POST_REMOVE="{
     if [ -f /opt/lib/python2.6/site-packages/yenc.py ]; then $CMD_RM -f /opt/lib/python2.6/site-packages/yenc.py ; fi
     if [ -f /opt/lib/python2.6/site-packages/_yenc.so ]; then $CMD_RM -f /opt/lib/python2.6/site-packages/_yenc.so ; fi
 }"
+#
+#PKG_POST_REMOVE="{
+#}"
 #
 ######################################################################
 # Define any package specific initialization that shall be performed
@@ -171,9 +171,22 @@ PKG_POST_REMOVE="{
 #
 pkg_install(){
 	# Create folders in Public share
-	[ -d ${BASE}/${PUBLIC_SHARE}/Downloads ] || mkdir ${BASE}/${PUBLIC_SHARE}/Downloads
-	[ -d ${BASE}/${PUBLIC_SHARE}/nzb ] || mkdir ${BASE}/${PUBLIC_SHARE}/nzb
-}
+	[ -d ${BASE}/${PUBLIC_SHARE}/Downloads ] || $CMD_MKDIR -p ${BASE}/${PUBLIC_SHARE}/Downloads/complete ${BASE}/${PUBLIC_SHARE}/Downloads/incomplete
+	[ -d ${BASE}/${PUBLIC_SHARE}/nzb ] || $CMD_MKDIR ${BASE}/${PUBLIC_SHARE}/nzb
+	
+	# Create default folders
+	[ -d $SYS_QPKG_DIR}/.sabnzbd ] || $CMD_MKDIR -p $SYS_QPKG_DIR}/.sabnzbd/nzb $SYS_QPKG_DIR}/.sabnzbd/admin $SYS_QPKG_DIR}/.sabnzbd/cache $SYS_QPKG_DIR}/.sabnzbd/log_dir
+
+	# Creating symlinks
+	[ -d $SYS_QPKG_DIR}/.sabnzbd/Downloads ] || $CMD_LN -sf ${BASE}/${PUBLIC_SHARE}/Downloads $SYS_QPKG_DIR}/.sabnzbd/Downloads
+	[ -d /root/.sabnzbd ] || $CMD_LN -sf ${QPKG_DIR}/.sabnzbd /root/.sabnzbd
+    [ -d /root/Downloads ] || $CMD_LN -sf ${BASE}/${PUBLIC_SHARE}/Downloads /root/Downloads
+    [ -d /root/nzb ] || $CMD_LN -sf ${BASE}/${PUBLIC_SHARE}/nzb /root/nzb
+    [ -f /usr/bin/ionice ] || $CMD_LN -f /usr/bin/ionice
+    [ -f /opt/lib/python2.6/site-packages/yenc.py ] || $CMD_LN -f /opt/lib/python2.6/site-packages/yenc.py
+    [ -f /opt/lib/python2.6/site-packages/_yenc.so ] || $CMD_LN -f /opt/lib/python2.6/site-packages/_yenc.so
+
+}	
 #
 #pkg_post_install(){
 #}
