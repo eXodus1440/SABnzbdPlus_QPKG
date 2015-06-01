@@ -57,7 +57,7 @@ case "$1" in
     fi
   
     echo "Creating symlinks ..."
-    [ -d $QPKG_DIR}/.sabnzbd/Downloads ] || /bin/ln -sf ${BASE}/${PUBLIC_SHARE}/Downloads $QPKG_DIR}/.sabnzbd/Downloads
+    [ -d ${QPKG_DIR}/.sabnzbd/Downloads ] || /bin/ln -sf ${BASE}/${PUBLIC_SHARE}/Downloads ${QPKG_DIR}/.sabnzbd/Downloads
     [ -d /root/.sabnzbd ] || /bin/ln -sf ${QPKG_DIR}/.sabnzbd /root/.sabnzbd
     [ -d /root/Downloads ] || /bin/ln -sf ${BASE}/${PUBLIC_SHARE}/Downloads /root/Downloads
     [ -d /root/nzb ] || /bin/ln -sf ${BASE}/${PUBLIC_SHARE}/nzb /root/nzb
@@ -117,7 +117,7 @@ case "$1" in
     
     # Clean up symlinks in event that SABnzbdPlus was shutdown outside QPKG manager
     echo "Removing symlinks ..."
-    if [ -d $QPKG_DIR}/.sabnzbd/Downloads ]; then /bin/rm -rf $QPKG_DIR}/.sabnzbd/Downloads ; fi
+    if [ -d ${QPKG_DIR}/.sabnzbd/Downloads ]; then /bin/rm -rf ${QPKG_DIR}/.sabnzbd/Downloads ; fi
     if [ -d /root/.sabnzbd ]; then /bin/rm -rf /root/.sabnzbd ; fi
     if [ -d /root/Downloads ]; then /bin/rm -rf /root/Downloads ; fi
     if [ -d /root/nzb ]; then /bin/rm -rf /root/nzb ; fi
