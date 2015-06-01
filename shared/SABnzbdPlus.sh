@@ -1,25 +1,25 @@
 #!/bin/sh
 CONF=/etc/config/qpkg.conf
 QPKG_NAME="SABnzbdPlus"
-QPKG_DIR=`$CMD_GETCFG $QPKG_NAME Install_Path -f ${CONF}`
-PUBLIC_SHARE=`$CMD_GETCFG SHARE_DEF defPublic -d Public -f /etc/config/def_share.info`
-WEBUI_IP=`$CMD_GETCFG misc host -f ${QPKG_DIR}/.sabnzbd/sabnzbd.ini`
-API_KEY=`$CMD_GETCFG misc api_key -f ${QPKG_DIR}/.sabnzbd/sabnzbd.ini`
-WEBUI_USER=`$CMD_GETCFG misc username -f ${QPKG_DIR}/.sabnzbd/sabnzbd.ini`
-WEBUI_PASS=`$CMD_GETCFG misc password -f ${QPKG_DIR}/.sabnzbd/sabnzbd.ini`
+QPKG_DIR=`/sbin/getcfg $QPKG_NAME Install_Path -f ${CONF}`
+PUBLIC_SHARE=`/sbin/getcfg SHARE_DEF defPublic -d Public -f /etc/config/def_share.info`
+WEBUI_IP=`/sbin/getcfg misc host -f ${QPKG_DIR}/.sabnzbd/sabnzbd.ini`
+API_KEY=`/sbin/getcfg misc api_key -f ${QPKG_DIR}/.sabnzbd/sabnzbd.ini`
+WEBUI_USER=`/sbin/getcfg misc username -f ${QPKG_DIR}/.sabnzbd/sabnzbd.ini`
+WEBUI_PASS=`/sbin/getcfg misc password -f ${QPKG_DIR}/.sabnzbd/sabnzbd.ini`
 SHUTDOWN_WAIT=300
 
 # Determine Protocol being used: http/https
-WEBUI_HTTPS=$($CMD_GETCFG misc enable_https -f ${QPKG_DIR}/.sabnzbd/sabnzbd.ini)
+WEBUI_HTTPS=$(/sbin/getcfg misc enable_https -f ${QPKG_DIR}/.sabnzbd/sabnzbd.ini)
 if [ "$WEBUI_HTTPS" = "0" ]; then
-  WEBUI_PORT=`$CMD_GETCFG misc port -f ${QPKG_DIR}/.sabnzbd/sabnzbd.ini`
+  WEBUI_PORT=`/sbin/getcfg misc port -f ${QPKG_DIR}/.sabnzbd/sabnzbd.ini`
 else
-  WEBUI_PORT=`$CMD_GETCFG misc https_port -f ${QPKG_DIR}/.sabnzbd/sabnzbd.ini`
+  WEBUI_PORT=`/sbin/getcfg misc https_port -f ${QPKG_DIR}/.sabnzbd/sabnzbd.ini`
 fi
 
 # Determine BASE installation location according to smb.conf
 BASE=
-publicdir=`$CMD_GETCFG $PUBLIC_SHARE path -f /etc/config/smb.conf`
+publicdir=`/sbin/getcfg $PUBLIC_SHARE path -f /etc/config/smb.conf`
 if [ ! -z $publicdir ] && [ -d $publicdir ];then
   publicdirp1=`/bin/echo $publicdir | /bin/cut -d "/" -f 2`
   publicdirp2=`/bin/echo $publicdir | /bin/cut -d "/" -f 3`
@@ -37,7 +37,7 @@ if [ -z $BASE ]; then
 fi
 if [ -z $BASE ] ; then
   echo "The Public share not found."
-  $CMD_WLOG "[$QPKG_NAME] The Public share not found." 1
+  /sbin/write_log "[$QPKG_NAME] The Public share not found." 1
   exit 1
 fi
 
@@ -45,7 +45,7 @@ fi
 
 case "$1" in
   start)
-    ENABLED=$($CMD_GETCFG $QPKG_NAME Enable -u -d FALSE -f $CONF)
+    ENABLED=$(/sbin/getcfg $QPKG_NAME Enable -u -d FALSE -f $CONF)
     if [ "$ENABLED" != "TRUE" ]; then
         echo "$QPKG_NAME is disabled."
         exit 1
@@ -57,12 +57,12 @@ case "$1" in
     fi
   
     echo "Creating Library links ..."
-    [ -d /root/.sabnzbd ] || $CMD_LN -sf ${QPKG_DIR}/.sabnzbd /root/.sabnzbd
-    [ -d /root/Downloads ] || $CMD_LN -sf ${BASE}/${PUBLIC_SHARE}/Downloads /root/Downloads
-    [ -d /root/nzb ] || $CMD_LN -sf ${BASE}/${PUBLIC_SHARE}/nzb /root/nzb
-    [ -f /usr/bin/ionice ] || $CMD_RM -f /usr/bin/ionice
-    [ -f /opt/lib/python2.6/site-packages/yenc.py ] || $CMD_RM -f /opt/lib/python2.6/site-packages/yenc.py
-    [ -f /opt/lib/python2.6/site-packages/_yenc.so ] || $CMD_RM -f /opt/lib/python2.6/site-packages/_yenc.so
+    [ -d /root/.sabnzbd ] || /bin/ln -sf ${QPKG_DIR}/.sabnzbd /root/.sabnzbd
+    [ -d /root/Downloads ] || /bin/ln -sf ${BASE}/${PUBLIC_SHARE}/Downloads /root/Downloads
+    [ -d /root/nzb ] || /bin/ln -sf ${BASE}/${PUBLIC_SHARE}/nzb /root/nzb
+    [ -f /usr/bin/ionice ] || /bin/rm -f /usr/bin/ionice
+    [ -f /opt/lib/python2.6/site-packages/yenc.py ] || /bin/rm -f /opt/lib/python2.6/site-packages/yenc.py
+    [ -f /opt/lib/python2.6/site-packages/_yenc.so ] || /bin/rm -f /opt/lib/python2.6/site-packages/_yenc.so
 
     echo "Starting $QPKG_NAME ..."
     if [ -f /root/.sabnzbd/sabnzbd.ini ]; then
@@ -78,14 +78,14 @@ case "$1" in
       PID=$(cat ${QPKG_DIR}/sabnzbd-${WEBUI_PORT}.pid)
       if [ `ps ax | grep -v grep | grep -c ${PID}` = '0' ]; then
         echo "$QPKG_NAME not running, cleaning up ${QPKG_DIR}/sabnzbd-${WEBUI_PORT}.pid ..."
-        $CMD_RM -f ${QPKG_DIR}/sabnzbd-$WEBUI_PORT.pid
+        /bin/rm -f ${QPKG_DIR}/sabnzbd-$WEBUI_PORT.pid
         exit 1
       else
         echo "Stopping $QPKG_NAME ..."
         if [ -n ${WEBUI_PASS} ]; then
-          $CMD_WGET -q --delete-after "http://${WEBUI_IP}:${WEBUI_PORT}/sabnzbd/api?mode=shutdown&apikey=${API_KEY}" &
+          /usr/bin/wget -q --delete-after "http://${WEBUI_IP}:${WEBUI_PORT}/sabnzbd/api?mode=shutdown&apikey=${API_KEY}" &
         else
-          $CMD_WGET -q --delete-after "http://${WEBUI_IP}:${WEBUI_PORT}/sabnzbd/api?mode=shutdown&ma_username=${WEBUI_USER}&ma_password=${WEBUI_PASS}&apikey=${API_KEY}" &
+          /usr/bin/wget -q --delete-after "http://${WEBUI_IP}:${WEBUI_PORT}/sabnzbd/api?mode=shutdown&ma_username=${WEBUI_USER}&ma_password=${WEBUI_PASS}&apikey=${API_KEY}" &
         fi
 
         # Waiting for SABnzbdPlus to shutdown gracefully
@@ -106,23 +106,24 @@ case "$1" in
             kill -9 `ps ax | grep 'par2' | grep -v grep | awk ' { print $1;}'`
           fi
         fi
+      fi
     fi
 
     # Cleaning up other items
-    $CMD_SLEEP 2
+    /bin/sleep 2
     
     # Clean up symlinks in event that SABnzbdPlus was shutdown outside QPKG manager
     echo "Removing Library links ..."
-    if [ -d /root/.sabnzbd ]; then $CMD_RM -rf /root/.sabnzbd ; fi
-    if [ -d /root/Downloads ]; then $CMD_RM -rf /root/Downloads ; fi
-    if [ -d /root/nzb ]; then $CMD_RM -rf /root/nzb ; fi
-    if [ -f /usr/bin/ionice ]; then $CMD_RM -f /usr/bin/ionice ; fi
-    if [ -f /opt/lib/python2.6/site-packages/yenc.py ]; then $CMD_RM -f /opt/lib/python2.6/site-packages/yenc.py ; fi
-    if [ -f /opt/lib/python2.6/site-packages/_yenc.so ]; then $CMD_RM -f /opt/lib/python2.6/site-packages/_yenc.so ; fi
+    if [ -d /root/.sabnzbd ]; then /bin/rm -rf /root/.sabnzbd ; fi
+    if [ -d /root/Downloads ]; then /bin/rm -rf /root/Downloads ; fi
+    if [ -d /root/nzb ]; then /bin/rm -rf /root/nzb ; fi
+    if [ -f /usr/bin/ionice ]; then /bin/rm -f /usr/bin/ionice ; fi
+    if [ -f /opt/lib/python2.6/site-packages/yenc.py ]; then /bin/rm -f /opt/lib/python2.6/site-packages/yenc.py ; fi
+    if [ -f /opt/lib/python2.6/site-packages/_yenc.so ]; then /bin/rm -f /opt/lib/python2.6/site-packages/_yenc.so ; fi
 
     # Disabling SABnzbdPlus within qpkg.conf
-    $CMD_SETCFG $QPKG_NAME Enable FALSE -f $CONF
-    exit 0    
+    /sbin/setcfg $QPKG_NAME Enable FALSE -f $CONF
+    exit 0
     ;;
 
   restart)
