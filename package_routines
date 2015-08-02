@@ -140,9 +140,10 @@ PKG_MAIN_REMOVE="{
 	[ -d ${BASE}/${PUBLIC_SHARE}/nzb ]; then $CMD_RM -rf ${BASE}/${PUBLIC_SHARE}/nzb
 
 	# Removing Library links
-	if [ -f /usr/bin/ionice ]; then $CMD_RM -f /usr/bin/ionice ; fi
-    if [ -f /opt/lib/python2.6/site-packages/yenc.py ]; then $CMD_RM -f /opt/lib/python2.6/site-packages/yenc.py ; fi
-    if [ -f /opt/lib/python2.6/site-packages/_yenc.so ]; then $CMD_RM -f /opt/lib/python2.6/site-packages/_yenc.so ; fi
+  if [ -h /usr/bin/nice ]; then $CMD_RM -f /usr/bin/nice ; fi
+  if [ -h /usr/bin/ionice ]; then $CMD_RM -f /usr/bin/ionice ; fi
+  if [ -h /opt/lib/python2.6/site-packages/yenc.py ]; then $CMD_RM -f /opt/lib/python2.6/site-packages/yenc.py ; fi
+  if [ -h /opt/lib/python2.6/site-packages/_yenc.so ]; then $CMD_RM -f /opt/lib/python2.6/site-packages/_yenc.so ; fi
 }"
 #
 #PKG_POST_REMOVE="{
@@ -175,17 +176,18 @@ pkg_install(){
 	[ -d ${BASE}/${PUBLIC_SHARE}/nzb ] || $CMD_MKDIR ${BASE}/${PUBLIC_SHARE}/nzb
 	
 	# Create default folders
-	[ -d ${SYS_QPKG_DIR}/.sabnzbd ] || $CMD_MKDIR -p ${SYS_QPKG_DIR}/.sabnzbd/nzb ${SYS_QPKG_DIR}/.sabnzbd/admin ${SYS_QPKG_DIR}/.sabnzbd/cache ${SYS_QPKG_DIR}/.sabnzbd/log_dir
+	[ -d ${SYS_QPKG_DIR}/.sabnzbd ] || $CMD_MKDIR -p ${SYS_QPKG_DIR}/.sabnzbd/nzb ${SYS_QPKG_DIR}/.sabnzbd/admin ${SYS_QPKG_DIR}/.sabnzbd/cache ${SYS_QPKG_DIR}/.sabnzbd/logs
 
 	# Creating symlinks
 	[ -d ${SYS_QPKG_DIR}/.sabnzbd/Downloads ] || $CMD_LN -sf ${BASE}/${PUBLIC_SHARE}/Downloads ${SYS_QPKG_DIR}/.sabnzbd/Downloads
 	[ -d /root/.sabnzbd ] || $CMD_LN -sf ${QPKG_DIR}/.sabnzbd /root/.sabnzbd
-    [ -d /root/Downloads ] || $CMD_LN -sf ${BASE}/${PUBLIC_SHARE}/Downloads /root/Downloads
-    [ -d /root/nzb ] || $CMD_LN -sf ${BASE}/${PUBLIC_SHARE}/nzb /root/nzb
-    [ -f /usr/bin/ionice ] || $CMD_LN -f /usr/bin/ionice
-    [ -f /opt/lib/python2.6/site-packages/yenc.py ] || $CMD_LN -f /opt/lib/python2.6/site-packages/yenc.py
-    [ -f /opt/lib/python2.6/site-packages/_yenc.so ] || $CMD_LN -f /opt/lib/python2.6/site-packages/_yenc.so
+  [ -d /root/Downloads ] || $CMD_LN -sf ${BASE}/${PUBLIC_SHARE}/Downloads /root/Downloads
+  [ -d /root/nzb ] || $CMD_LN -sf ${BASE}/${PUBLIC_SHARE}/nzb /root/nzb
 
+  [ -h /usr/bin/nice ] || $CMD_LN -sf ${QPKG_DIR}/bin-utils/nice /usr/bin/nice
+  [ -h /usr/bin/ionice ] || $CMD_LN -sf ${QPKG_DIR}/bin-utils/ionice /usr/bin/ionice
+  [ -h /opt/lib/python2.6/site-packages/yenc.py ] || $CMD_LN -sf ${QPKG_DIR}/lib/yenc.py /opt/lib/python2.6/site-packages/yenc.py
+  [ -h /opt/lib/python2.6/site-packages/_yenc.so ] || $CMD_LN -sf ${QPKG_DIR}/lib/_yenc.so /opt/lib/python2.6/site-packages/_yenc.so
 }	
 #
 #pkg_post_install(){

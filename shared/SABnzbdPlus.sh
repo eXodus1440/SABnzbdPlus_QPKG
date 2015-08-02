@@ -61,9 +61,10 @@ case "$1" in
     [ -d /root/.sabnzbd ] || /bin/ln -sf ${QPKG_DIR}/.sabnzbd /root/.sabnzbd
     [ -d /root/Downloads ] || /bin/ln -sf ${BASE}/${PUBLIC_SHARE}/Downloads /root/Downloads
     [ -d /root/nzb ] || /bin/ln -sf ${BASE}/${PUBLIC_SHARE}/nzb /root/nzb
-    [ -f /usr/bin/ionice ] || /bin/rm -f /usr/bin/ionice
-    [ -f /opt/lib/python2.6/site-packages/yenc.py ] || /bin/rm -f /opt/lib/python2.6/site-packages/yenc.py
-    [ -f /opt/lib/python2.6/site-packages/_yenc.so ] || /bin/rm -f /opt/lib/python2.6/site-packages/_yenc.so
+    [ -h /usr/bin/nice ] || /bin/ln -sf ${QPKG_DIR}/bin-utils/nice /usr/bin/nice
+    [ -h /usr/bin/ionice ] || /bin/ln -sf ${QPKG_DIR}/bin-utils/ionice /usr/bin/ionice
+    [ -h /opt/lib/python2.6/site-packages/yenc.py ] || /bin/ln -sf ${QPKG_DIR}/lib/yenc.py /opt/lib/python2.6/site-packages/yenc.py
+    [ -h /opt/lib/python2.6/site-packages/_yenc.so ] || /bin/ln -sf ${QPKG_DIR}/lib/_yenc.so /opt/lib/python2.6/site-packages/_yenc.so
 
     echo "Starting $QPKG_NAME ..."
     if [ -f /root/.sabnzbd/sabnzbd.ini ]; then
@@ -121,9 +122,10 @@ case "$1" in
     if [ -d /root/.sabnzbd ]; then /bin/rm -rf /root/.sabnzbd ; fi
     if [ -d /root/Downloads ]; then /bin/rm -rf /root/Downloads ; fi
     if [ -d /root/nzb ]; then /bin/rm -rf /root/nzb ; fi
-    if [ -f /usr/bin/ionice ]; then /bin/rm -f /usr/bin/ionice ; fi
-    if [ -f /opt/lib/python2.6/site-packages/yenc.py ]; then /bin/rm -f /opt/lib/python2.6/site-packages/yenc.py ; fi
-    if [ -f /opt/lib/python2.6/site-packages/_yenc.so ]; then /bin/rm -f /opt/lib/python2.6/site-packages/_yenc.so ; fi
+    if [ -h /usr/bin/nice ]; then /bin/rm -f /usr/bin/nice ; fi
+    if [ -h /usr/bin/ionice ]; then /bin/rm -f /usr/bin/ionice ; fi
+    if [ -h /opt/lib/python2.6/site-packages/yenc.py ]; then /bin/rm -f /opt/lib/python2.6/site-packages/yenc.py ; fi
+    if [ -h /opt/lib/python2.6/site-packages/_yenc.so ]; then /bin/rm -f /opt/lib/python2.6/site-packages/_yenc.so ; fi
 
     # Disabling SABnzbdPlus within qpkg.conf
     /sbin/setcfg $QPKG_NAME Enable FALSE -f $CONF
