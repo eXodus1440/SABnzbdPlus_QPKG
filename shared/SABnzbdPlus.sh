@@ -63,6 +63,8 @@ case "$1" in
     [ -d /root/nzb ] || /bin/ln -sf ${BASE}/${PUBLIC_SHARE}/nzb /root/nzb
     [ -h /usr/bin/nice ] || /bin/ln -sf ${QPKG_DIR}/bin-utils/nice /usr/bin/nice
     [ -h /usr/bin/ionice ] || /bin/ln -sf ${QPKG_DIR}/bin-utils/ionice /usr/bin/ionice
+    [ -h /usr/bin/unrar ] || /bin/ln -sf /opt/bin/unrar /usr/bin/unrar
+    [ -h /usr/bin/par2 ] || /bin/ln -sf /opt/bin/par2 /usr/bin/par2
     [ -h /opt/lib/python2.6/site-packages/yenc.py ] || /bin/ln -sf ${QPKG_DIR}/lib/yenc.py /opt/lib/python2.6/site-packages/yenc.py
     [ -h /opt/lib/python2.6/site-packages/_yenc.so ] || /bin/ln -sf ${QPKG_DIR}/lib/_yenc.so /opt/lib/python2.6/site-packages/_yenc.so
 
@@ -124,6 +126,8 @@ case "$1" in
     if [ -d /root/nzb ]; then /bin/rm -rf /root/nzb ; fi
     if [ -h /usr/bin/nice ]; then /bin/rm -f /usr/bin/nice ; fi
     if [ -h /usr/bin/ionice ]; then /bin/rm -f /usr/bin/ionice ; fi
+    if [ -h /usr/bin/unrar ]; then /bin/rm -f /usr/bin/unrar ; fi
+    if [ -h /usr/bin/par2 ]; then /bin/rm -f /usr/bin/par2 ; fi
     if [ -h /opt/lib/python2.6/site-packages/yenc.py ]; then /bin/rm -f /opt/lib/python2.6/site-packages/yenc.py ; fi
     if [ -h /opt/lib/python2.6/site-packages/_yenc.so ]; then /bin/rm -f /opt/lib/python2.6/site-packages/_yenc.so ; fi
 
