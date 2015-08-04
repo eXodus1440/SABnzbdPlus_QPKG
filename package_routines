@@ -131,8 +131,10 @@ fi
 # Define any package specific operations that shall be performed when
 # the package is removed.
 ######################################################################
-#PKG_PRE_REMOVE="{
-#}"
+PKG_PRE_REMOVE="{
+  # Stop SABnzbdPlus
+  ${QPKG_DIR}/SABnzbdPlus.sh stop
+}"
 #
 PKG_MAIN_REMOVE="{
 	# Removing folders in Public share
@@ -190,5 +192,7 @@ pkg_install(){
   [ -h /opt/lib/python2.6/site-packages/_yenc.so ] || $CMD_LN -sf ${QPKG_DIR}/lib/_yenc.so /opt/lib/python2.6/site-packages/_yenc.so
 }	
 #
-#pkg_post_install(){
-#}
+pkg_post_install(){
+  # Start SABnzbdPlus
+  ${QPKG_DIR}/SABnzbdPlus.sh start
+}
