@@ -7,7 +7,7 @@ WEBUI_IP=`/sbin/getcfg misc host -f ${QPKG_DIR}/.sabnzbd/sabnzbd.ini`
 API_KEY=`/sbin/getcfg misc api_key -f ${QPKG_DIR}/.sabnzbd/sabnzbd.ini`
 WEBUI_USER=`/sbin/getcfg misc username -f ${QPKG_DIR}/.sabnzbd/sabnzbd.ini`
 WEBUI_PASS=`/sbin/getcfg misc password -f ${QPKG_DIR}/.sabnzbd/sabnzbd.ini`
-SHUTDOWN_WAIT=300
+SHUTDOWN_WAIT=120
 
 # Determine Protocol being used: http/https
 WEBUI_HTTPS=$(/sbin/getcfg misc enable_https -f ${QPKG_DIR}/.sabnzbd/sabnzbd.ini)
