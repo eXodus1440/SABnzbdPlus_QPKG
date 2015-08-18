@@ -198,6 +198,6 @@ pkg_pre_install(){
 #
 pkg_post_install(){
 
-  SYS_QPKG_SERVICE_ENABLED="TRUE"
+  #SYS_QPKG_SERVICE_ENABLED="TRUE"
 
 }
