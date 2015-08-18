@@ -75,7 +75,7 @@
 ## Location of installed software.
 #SYS_QPKG_DIR=""
 ## If the QPKG should be enabled or disabled after the installation/upgrade.
-SYS_QPKG_SERVICE_ENABLED="TRUE"
+#SYS_QPKG_SERVICE_ENABLED="TRUE"
 ## Architecture of the device the QPKG is installed on.
 #SYS_CPU_ARCH=""
 ## Name and location of system shares
@@ -196,5 +196,8 @@ pkg_pre_install(){
   #${SYS_QPKG_DIR}/SABnzbdPlus.sh start
 #}	
 #
-#pkg_post_install(){
-#}
+pkg_post_install(){
+
+  SYS_QPKG_SERVICE_ENABLED="TRUE"
+
+}
