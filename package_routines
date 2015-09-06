@@ -145,6 +145,8 @@ PKG_POST_REMOVE="{
   if [ -h /root/.sabnzbd ]; then $CMD_RM -f /root/.sabnzbd ; fi
   if [ -h /usr/bin/nice ]; then $CMD_RM -f /usr/bin/nice ; fi
   if [ -h /usr/bin/ionice ]; then $CMD_RM -f /usr/bin/ionice ; fi
+  if [ -h /usr/bin/unrar ]; then $CMD_RM -f /usr/bin/unrar ; fi
+  if [ -h /usr/bin/par2 ]; then $CMD_RM -f /usr/bin/par2 ; fi
   if [ -h /opt/lib/python2.6/site-packages/yenc.py ]; then $CMD_RM -f /opt/lib/python2.6/site-packages/yenc.py ; fi
   if [ -h /opt/lib/python2.6/site-packages/_yenc.so ]; then $CMD_RM -f /opt/lib/python2.6/site-packages/_yenc.so ; fi
 
