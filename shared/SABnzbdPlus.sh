@@ -1,22 +1,26 @@
 #!/bin/sh
 CONF=/etc/config/qpkg.conf
 QPKG_NAME="SABnzbdPlus"
-QPKG_DIR=`/sbin/getcfg $QPKG_NAME Install_Path -f ${CONF}`
+QPKG_ROOT=`/sbin/getcfg $QPKG_NAME Install_Path -f ${CONF}`
 ENABLED=$(/sbin/getcfg $QPKG_NAME Enable -u -d FALSE -f $CONF)
 PUBLIC_SHARE=`/sbin/getcfg SHARE_DEF defPublic -d Public -f /etc/config/def_share.info`
-WEBUI_IP=`/sbin/getcfg misc host -f ${QPKG_DIR}/.sabnzbd/sabnzbd.ini`
-API_KEY=`/sbin/getcfg misc api_key -f ${QPKG_DIR}/.sabnzbd/sabnzbd.ini`
-WEBUI_USER=`/sbin/getcfg misc username -f ${QPKG_DIR}/.sabnzbd/sabnzbd.ini`
-WEBUI_PASS=`/sbin/getcfg misc password -f ${QPKG_DIR}/.sabnzbd/sabnzbd.ini`
-SHUTDOWN_WAIT=60
+API_KEY=`/sbin/getcfg misc api_key -f ${QPKG_ROOT}/.sabnzbd/sabnzbd.ini`
+WEBUI_USER=`/sbin/getcfg misc username -f ${QPKG_ROOT}/.sabnzbd/sabnzbd.ini`
+WEBUI_PASS=`/sbin/getcfg misc password -f ${QPKG_ROOT}/.sabnzbd/sabnzbd.ini`
+SHUTDOWN_WAIT=15
 
-# Determine Protocol being used: http/https
-WEBUI_HTTPS=$(/sbin/getcfg misc enable_https -f ${QPKG_DIR}/.sabnzbd/sabnzbd.ini)
+# Determine IP being used
+WEBUI_IP=`/sbin/getcfg misc host -f ${QPKG_ROOT}/.sabnzbd/sabnzbd.ini`
+[ -n ${WEBUI_IP} ] || WEBUI_IP="0.0.0.0"
+
+# Determine protocol & port being used
+WEBUI_HTTPS=$(/sbin/getcfg misc enable_https -f ${QPKG_ROOT}/.sabnzbd/sabnzbd.ini)
 if [ "$WEBUI_HTTPS" = "0" ]; then
-  WEBUI_PORT=`/sbin/getcfg misc port -f ${QPKG_DIR}/.sabnzbd/sabnzbd.ini`
+  WEBUI_PORT=`/sbin/getcfg misc port -f ${QPKG_ROOT}/.sabnzbd/sabnzbd.ini`
 else
-  WEBUI_PORT=`/sbin/getcfg misc https_port -f ${QPKG_DIR}/.sabnzbd/sabnzbd.ini`
+  WEBUI_PORT=`/sbin/getcfg misc https_port -f ${QPKG_ROOT}/.sabnzbd/sabnzbd.ini`
 fi
+[ -n ${WEBUI_PORT} ] || WEBUI_PORT=8085 # Default to port 8085
 
 # Determine BASE installation location according to smb.conf
 BASE=
@@ -29,6 +33,7 @@ if [ ! -z $publicdir ] && [ -d $publicdir ];then
     [ -d "/${publicdirp1}/${publicdirp2}/${PUBLIC_SHARE}" ] && BASE="/${publicdirp1}/${publicdirp2}"
   fi
 fi
+####
 
 # Determine BASE installation location by checking where the Public folder is.
 if [ -z $BASE ]; then
@@ -41,52 +46,49 @@ if [ -z $BASE ] ; then
   /sbin/write_log "[$QPKG_NAME] The Public share not found." 1
   exit 1
 fi
-
 ####
 
 case "$1" in
   start)
+    # Check if enabled
     #ENABLED=$(/sbin/getcfg $QPKG_NAME Enable -u -d FALSE -f $CONF)
     if [ "$ENABLED" != "TRUE" ]; then
-        echo "$QPKG_NAME is disabled."
-        exit 1
-    fi
-
-    if [ -f ${QPKG_DIR}/sabnzbd-${WEBUI_PORT}.pid ]; then
-      echo "$QPKG_NAME is currently running or hasn't been shutdown properly. Please stop it before starting a new instance."
+      echo "$QPKG_NAME is disabled."
       exit 1
     fi
-  
-    echo "Creating symlinks ..."
-    [ -d ${QPKG_DIR}/.sabnzbd/Downloads ] || /bin/ln -sf ${BASE}/${PUBLIC_SHARE}/Downloads ${QPKG_DIR}/.sabnzbd/Downloads
-    [ -d /root/.sabnzbd ] || /bin/ln -sf ${QPKG_DIR}/.sabnzbd /root/.sabnzbd
-    [ -d /root/Downloads ] || /bin/ln -sf ${BASE}/${PUBLIC_SHARE}/Downloads /root/Downloads
-    [ -d /root/nzb ] || /bin/ln -sf ${BASE}/${PUBLIC_SHARE}/nzb /root/nzb
-    [ -h /usr/bin/nice ] || /bin/ln -sf ${QPKG_DIR}/bin-utils/nice /usr/bin/nice
-    [ -h /usr/bin/ionice ] || /bin/ln -sf ${QPKG_DIR}/bin-utils/ionice /usr/bin/ionice
-    [ -h /usr/bin/unrar ] || /bin/ln -sf /opt/bin/unrar /usr/bin/unrar
-    [ -h /usr/bin/par2 ] || /bin/ln -sf /opt/bin/par2 /usr/bin/par2
-    [ -h /opt/lib/python2.6/site-packages/yenc.py ] || /bin/ln -sf ${QPKG_DIR}/lib/yenc.py /opt/lib/python2.6/site-packages/yenc.py
-    [ -h /opt/lib/python2.6/site-packages/_yenc.so ] || /bin/ln -sf ${QPKG_DIR}/lib/_yenc.so /opt/lib/python2.6/site-packages/_yenc.so
 
-    echo "Starting $QPKG_NAME ..."
-    if [ -f /root/.sabnzbd/sabnzbd.ini ]; then
-      /opt/bin/python2.6 ${QPKG_DIR}/SABnzbd.py --pid ${QPKG_DIR} -f /root/.sabnzbd/sabnzbd.ini -d &
-    else
-      # Start on port 8085 by default
-      /opt/bin/python2.6 ${QPKG_DIR}/SABnzbd.py -s 0.0.0.0:8085 -b 0 --pid ${QPKG_DIR} &
+    # Check if instance already exist
+    if [ -f ${QPKG_ROOT}/sabnzbd-${WEBUI_PORT}.pid ]; then
+      echo "$QPKG_NAME is currently running or hasn't been shutdown properly."
+      echo "Please stop it before starting a new instance."
+      exit 1
     fi
 
-    # Enabling SABnzbdPlus within qpkg.conf
-    #/sbin/setcfg $QPKG_NAME Enable TRUE -f $CONF
+    # Create symlinks
+    echo "Creating symlinks ..."
+    [ -d ${QPKG_ROOT}/.sabnzbd/Downloads ] || /bin/ln -sf ${BASE}/${PUBLIC_SHARE}/Downloads ${QPKG_ROOT}/.sabnzbd/Downloads
+    [ -d /root/.sabnzbd ] || /bin/ln -sf ${QPKG_ROOT}/.sabnzbd /root/.sabnzbd
+    [ -d /root/Downloads ] || /bin/ln -sf ${BASE}/${PUBLIC_SHARE}/Downloads /root/Downloads
+    [ -d /root/nzb ] || /bin/ln -sf ${BASE}/${PUBLIC_SHARE}/nzb /root/nzb
+    [ -h /usr/bin/nice ] || /bin/ln -sf ${QPKG_ROOT}/bin-utils/nice /usr/bin/nice
+    [ -h /usr/bin/ionice ] || /bin/ln -sf ${QPKG_ROOT}/bin-utils/ionice /usr/bin/ionice
+    [ -h /usr/bin/unrar ] || /bin/ln -sf /opt/bin/unrar /usr/bin/unrar
+    [ -h /usr/bin/par2 ] || /bin/ln -sf /opt/bin/par2 /usr/bin/par2
+    [ -h /opt/lib/python2.6/site-packages/yenc.py ] || /bin/ln -sf ${QPKG_ROOT}/lib/yenc.py /opt/lib/python2.6/site-packages/yenc.py
+    [ -h /opt/lib/python2.6/site-packages/_yenc.so ] || /bin/ln -sf ${QPKG_ROOT}/lib/_yenc.so /opt/lib/python2.6/site-packages/_yenc.so
+
+    # Start SABnzbdPlus
+    /opt/bin/python2.6 ${QPKG_ROOT}/SABnzbd.py -s ${WEBUI_IP}:${WEBUI_PORT} -b 0 --pid ${QPKG_ROOT} -f /root/.sabnzbd/sabnzbd.ini -d
+
     ;;
 
   stop)
-    if [ -f "$QPKG_DIR/sabnzbd-$WEBUI_PORT.pid" ]; then
-      PID=$(cat ${QPKG_DIR}/sabnzbd-${WEBUI_PORT}.pid)
+    # Stop SABnzbdPlus
+    if [ -f "$QPKG_ROOT/sabnzbd-$WEBUI_PORT.pid" ]; then
+      PID=$(cat ${QPKG_ROOT}/sabnzbd-${WEBUI_PORT}.pid)
       if [ `ps ax | grep -v grep | grep -c ${PID}` = '0' ]; then
-        echo "$QPKG_NAME not running, cleaning up ${QPKG_DIR}/sabnzbd-${WEBUI_PORT}.pid ..."
-        /bin/rm -f ${QPKG_DIR}/sabnzbd-$WEBUI_PORT.pid
+        echo "$QPKG_NAME not running, cleaning up ${QPKG_ROOT}/sabnzbd-${WEBUI_PORT}.pid ..."
+        /bin/rm -f ${QPKG_ROOT}/sabnzbd-$WEBUI_PORT.pid
       else
         echo "Stopping $QPKG_NAME ..."
         if [ -n ${WEBUI_PASS} ]; then
@@ -116,26 +118,17 @@ case "$1" in
       fi
     fi
 
-    # Cleaning up other items
-    /bin/sleep 2
-    
-    # Clean up symlinks in event that SABnzbdPlus was shutdown outside QPKG manager
-    echo "Removing symlinks ..."
-    if [ -d ${QPKG_DIR}/.sabnzbd/Downloads ]; then /bin/rm -rf ${QPKG_DIR}/.sabnzbd/Downloads ; fi
-    if [ -d /root/.sabnzbd ]; then /bin/rm -rf /root/.sabnzbd ; fi
-    if [ -d /root/Downloads ]; then /bin/rm -rf /root/Downloads ; fi
-    if [ -d /root/nzb ]; then /bin/rm -rf /root/nzb ; fi
-    if [ -h /usr/bin/nice ]; then /bin/rm -f /usr/bin/nice ; fi
-    if [ -h /usr/bin/ionice ]; then /bin/rm -f /usr/bin/ionice ; fi
-    if [ -h /usr/bin/unrar ]; then /bin/rm -f /usr/bin/unrar ; fi
-    if [ -h /usr/bin/par2 ]; then /bin/rm -f /usr/bin/par2 ; fi
-    if [ -h /opt/lib/python2.6/site-packages/yenc.py ]; then /bin/rm -f /opt/lib/python2.6/site-packages/yenc.py ; fi
-    if [ -h /opt/lib/python2.6/site-packages/_yenc.so ]; then /bin/rm -f /opt/lib/python2.6/site-packages/_yenc.so ; fi
-
-    # Disabling SABnzbdPlus within qpkg.conf
-    if [ "$ENABLED" = "TRUE" ]; then /sbin/setcfg $QPKG_NAME Enable FALSE -f $CONF ; fi
-    
-    exit 0
+#    #PID=$(cat ${QPKG_ROOT}/sabnzbd-${WEBUI_PORT}.pid)
+#    if [ -f ${QPKG_ROOT}/sabnzbd-${WEBUI_PORT}.pid ] ; then
+#      PID=$(cat ${QPKG_ROOT}/sabnzbd-${WEBUI_PORT}.pid)
+#      if [ `ps ax | grep -v grep | grep -c ${PID}` = '0' ]; then
+#        echo "$QPKG_NAME not running, cleaning up ${QPKG_ROOT}/sabnzbd-${WEBUI_PORT}.pid ..."
+#        /bin/rm -f ${QPKG_ROOT}/sabnzbd-${WEBUI_PORT}.pid
+#      else
+#        echo "Stopping $QPKG_NAME ..."
+#        kill ${PID}
+#      fi
+#    fi
     ;;
 
   restart)
@@ -149,3 +142,4 @@ case "$1" in
 esac
 
 exit 0
+
