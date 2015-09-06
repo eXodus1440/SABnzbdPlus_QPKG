@@ -91,6 +91,7 @@ case "$1" in
         /bin/rm -f ${QPKG_ROOT}/sabnzbd-$WEBUI_PORT.pid
       else
         echo "Stopping $QPKG_NAME ..."
+        WEBUI_PASS=`sed -e 's/^"//' -e 's/"$//' <<< $WEBUI_PASS`
         if [ -n ${WEBUI_PASS} ]; then
           /usr/bin/wget -q --delete-after "http://${WEBUI_IP}:${WEBUI_PORT}/sabnzbd/api?mode=shutdown&apikey=${API_KEY}" &
         else
@@ -113,6 +114,9 @@ case "$1" in
             echo "Killing ${QPKG_NAME} processes which didn't stop after ${SHUTDOWN_WAIT} seconds"
             kill -9 ${PID}
             kill -9 `ps ax | grep 'par2' | grep -v grep | awk ' { print $1;}'`
+
+            # Clean up PIDFile
+            if [ -f ${QPKG_ROOT}/sabnzbd-$WEBUI_PORT.pid ] ; then /bin/rm -f ${QPKG_ROOT}/sabnzbd-$WEBUI_PORT.pid ; fi
           fi
         fi
       fi
