@@ -7,7 +7,7 @@ PUBLIC_SHARE=`/sbin/getcfg SHARE_DEF defPublic -d Public -f /etc/config/def_shar
 API_KEY=`/sbin/getcfg misc api_key -f ${QPKG_ROOT}/.sabnzbd/sabnzbd.ini`
 WEBUI_USER=`/sbin/getcfg misc username -f ${QPKG_ROOT}/.sabnzbd/sabnzbd.ini`
 WEBUI_PASS=`/sbin/getcfg misc password -f ${QPKG_ROOT}/.sabnzbd/sabnzbd.ini`
-SHUTDOWN_WAIT=15
+SHUTDOWN_WAIT=25
 
 # Determine IP being used
 WEBUI_IP=`/sbin/getcfg misc host -f ${QPKG_ROOT}/.sabnzbd/sabnzbd.ini`
@@ -121,18 +121,6 @@ case "$1" in
         fi
       fi
     fi
-
-#    #PID=$(cat ${QPKG_ROOT}/sabnzbd-${WEBUI_PORT}.pid)
-#    if [ -f ${QPKG_ROOT}/sabnzbd-${WEBUI_PORT}.pid ] ; then
-#      PID=$(cat ${QPKG_ROOT}/sabnzbd-${WEBUI_PORT}.pid)
-#      if [ `ps ax | grep -v grep | grep -c ${PID}` = '0' ]; then
-#        echo "$QPKG_NAME not running, cleaning up ${QPKG_ROOT}/sabnzbd-${WEBUI_PORT}.pid ..."
-#        /bin/rm -f ${QPKG_ROOT}/sabnzbd-${WEBUI_PORT}.pid
-#      else
-#        echo "Stopping $QPKG_NAME ..."
-#        kill ${PID}
-#      fi
-#    fi
     ;;
 
   restart)
