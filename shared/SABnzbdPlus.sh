@@ -11,7 +11,7 @@ SHUTDOWN_WAIT=15
 
 # Determine IP being used
 WEBUI_IP=`/sbin/getcfg misc host -f ${QPKG_ROOT}/.sabnzbd/sabnzbd.ini`
-[ -n ${WEBUI_IP} ] || WEBUI_IP="0.0.0.0"
+if [ -z ${WEBUI_IP} ]; then WEBUI_IP="0.0.0.0" ; fi
 
 # Determine protocol & port being used
 WEBUI_HTTPS=$(/sbin/getcfg misc enable_https -f ${QPKG_ROOT}/.sabnzbd/sabnzbd.ini)
@@ -20,7 +20,7 @@ if [ "$WEBUI_HTTPS" = "0" ]; then
 else
   WEBUI_PORT=`/sbin/getcfg misc https_port -f ${QPKG_ROOT}/.sabnzbd/sabnzbd.ini`
 fi
-[ -n ${WEBUI_PORT} ] || WEBUI_PORT=8085 # Default to port 8085
+if [ -z ${WEBUI_PORT} ]; then WEBUI_PORT=8085 ; fi # Default to port 8085
 
 # Determine BASE installation location according to smb.conf
 BASE=
