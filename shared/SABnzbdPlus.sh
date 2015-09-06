@@ -2,12 +2,13 @@
 CONF=/etc/config/qpkg.conf
 QPKG_NAME="SABnzbdPlus"
 QPKG_DIR=`/sbin/getcfg $QPKG_NAME Install_Path -f ${CONF}`
+ENABLED=$(/sbin/getcfg $QPKG_NAME Enable -u -d FALSE -f $CONF)
 PUBLIC_SHARE=`/sbin/getcfg SHARE_DEF defPublic -d Public -f /etc/config/def_share.info`
 WEBUI_IP=`/sbin/getcfg misc host -f ${QPKG_DIR}/.sabnzbd/sabnzbd.ini`
 API_KEY=`/sbin/getcfg misc api_key -f ${QPKG_DIR}/.sabnzbd/sabnzbd.ini`
 WEBUI_USER=`/sbin/getcfg misc username -f ${QPKG_DIR}/.sabnzbd/sabnzbd.ini`
 WEBUI_PASS=`/sbin/getcfg misc password -f ${QPKG_DIR}/.sabnzbd/sabnzbd.ini`
-SHUTDOWN_WAIT=120
+SHUTDOWN_WAIT=60
 
 # Determine Protocol being used: http/https
 WEBUI_HTTPS=$(/sbin/getcfg misc enable_https -f ${QPKG_DIR}/.sabnzbd/sabnzbd.ini)
@@ -46,10 +47,10 @@ fi
 case "$1" in
   start)
     #ENABLED=$(/sbin/getcfg $QPKG_NAME Enable -u -d FALSE -f $CONF)
-    #if [ "$ENABLED" != "TRUE" ]; then
-    #    echo "$QPKG_NAME is disabled."
-    #    exit 1
-    #fi
+    if [ "$ENABLED" != "TRUE" ]; then
+        echo "$QPKG_NAME is disabled."
+        exit 1
+    fi
 
     if [ -f ${QPKG_DIR}/sabnzbd-${WEBUI_PORT}.pid ]; then
       echo "$QPKG_NAME is currently running or hasn't been shutdown properly. Please stop it before starting a new instance."
@@ -77,7 +78,7 @@ case "$1" in
     fi
 
     # Enabling SABnzbdPlus within qpkg.conf
-    /sbin/setcfg $QPKG_NAME Enable TRUE -f $CONF
+    #/sbin/setcfg $QPKG_NAME Enable TRUE -f $CONF
     ;;
 
   stop)
@@ -108,7 +109,7 @@ case "$1" in
           # Killing SABnzbdPlus and par2 after SHUTDOWN_WAIT period
           if [ "${COUNT}" -gt "${KWAIT}" ]; then
             echo "Killing ${QPKG_NAME} processes which didn't stop after ${SHUTDOWN_WAIT} seconds"
-            kill -9 `ps ax | grep 'SABnzbd' | grep -v grep | awk ' { print $1;}'`
+            kill -9 ${PID}
             kill -9 `ps ax | grep 'par2' | grep -v grep | awk ' { print $1;}'`
           fi
         fi
@@ -132,7 +133,8 @@ case "$1" in
     if [ -h /opt/lib/python2.6/site-packages/_yenc.so ]; then /bin/rm -f /opt/lib/python2.6/site-packages/_yenc.so ; fi
 
     # Disabling SABnzbdPlus within qpkg.conf
-    /sbin/setcfg $QPKG_NAME Enable FALSE -f $CONF
+    if [ "$ENABLED" = "TRUE" ]; then /sbin/setcfg $QPKG_NAME Enable FALSE -f $CONF ; fi
+    
     exit 0
     ;;
 
