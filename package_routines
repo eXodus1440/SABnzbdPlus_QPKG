@@ -203,10 +203,10 @@ pkg_install(){
   [ -h /usr/lib/python2.7/site-packages/yenc.py ] || /bin/ln -sf ${QPKG_ROOT}/lib/yenc.py /usr/lib/python2.7/site-packages/yenc.py
   [ -h /usr/lib/python2.7/site-packages/_yenc.so ] || /bin/ln -sf ${QPKG_ROOT}/lib/_yenc.so /usr/lib/python2.7/site-packages/_yenc.so
 
+  # Installing python modules
+  [ -d /usr/lib/python2.7/site-packages/Cheetah ] || ${PYTHON} ${QPKG_ROOT}/lib/Cheetah-2.4.4/setup.py install
+
 }
 #
-pkg_post_install(){
-
-  ${PYTHON} ${QPKG_ROOT}/lib/Cheetah-2.4.4/setup.py install
-
-}
+#pkg_post_install(){
+#}
