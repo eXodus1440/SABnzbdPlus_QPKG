@@ -95,7 +95,7 @@
 #CMD_PKG_TOOL=
 #
 
-PYTHON_DIR="/opt/bin"
+PYTHON_DIR="/usr/bin"
 PYTHON="${PYTHON_DIR}/python2.7"
 
 # Find the Public share
