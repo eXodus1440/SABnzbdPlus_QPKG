@@ -95,6 +95,9 @@
 #CMD_PKG_TOOL=
 #
 
+PYTHON_DIR="/opt/bin"
+PYTHON="${PYTHON_DIR}/python2.7"
+
 # Find the Public share
 PUBLIC_SHARE=`$CMD_GETCFG SHARE_DEF defPublic -d Public -f /etc/config/def_share.info`
 
@@ -154,6 +157,9 @@ PKG_POST_REMOVE="{
   if [ -d ${BASE}/${PUBLIC_SHARE}/Downloads ]; then $CMD_RM -rf ${BASE}/${PUBLIC_SHARE}/Downloads ; fi
   if [ -d ${BASE}/${PUBLIC_SHARE}/nzb ]; then $CMD_RM -rf ${BASE}/${PUBLIC_SHARE}/nzb ; fi
 
+  # Removing python libs
+  if [ -d /usr/lib/python2.7/site-packages/Cheetah ] ; then $CMD_RM -rf /usr/lib/python2.7/site-packages/Cheetah* ; fi
+
 }"
 #
 ######################################################################
@@ -199,5 +205,8 @@ pkg_install(){
 
 }
 #
-#pkg_post_install(){
-#}
+pkg_post_install(){
+
+  ${PYTHON} ${QPKG_ROOT}/lib/Cheetah-2.4.4/setup.py install
+
+}

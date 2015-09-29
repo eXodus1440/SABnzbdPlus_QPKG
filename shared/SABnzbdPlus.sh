@@ -5,7 +5,7 @@ CMD_SETCFG="/sbin/setcfg"
 
 QPKG_NAME="SABnzbdPlus"
 QPKG_ROOT=$(${CMD_GETCFG} ${QPKG_NAME} Install_Path -f ${CONF})
-PYTHON_DIR="/opt/bin"
+PYTHON_DIR="/usr/bin"
 #PATH="${QPKG_ROOT}/bin:${QPKG_ROOT}/env/bin:${PYTHON_DIR}/bin:/usr/local/bin:/bin:/usr/bin:/usr/syno/bin"
 PYTHON="${PYTHON_DIR}/python2.7"
 SABNZBD="${QPKG_ROOT}/SABnzbd.py"
@@ -116,6 +116,10 @@ case "$1" in
     [ -h /usr/bin/ionice ] || /bin/ln -sf ${QPKG_ROOT}/bin-utils/ionice /usr/bin/ionice
     [ -h /usr/bin/unrar ] || /bin/ln -sf /opt/bin/unrar /usr/bin/unrar
     [ -h /usr/bin/par2 ] || /bin/ln -sf /opt/bin/par2 /usr/bin/par2
+
+    #[ -h /usr/lib/python2.7/site-packages/Cheetah-2.4.4 ] || /bin/ln -sf ${QPKG_ROOT}/lib/Cheetah-2.4.4 /usr/lib/python2.7/site-packages/Cheetah-2.4.4
+    #[ -h /usr/lib/python2.7/site-packages/pyOpenSSL-0.11 ] || /bin/ln -sf ${QPKG_ROOT}/lib/pyOpenSSL-0.11 /usr/lib/python2.7/site-packages/pyOpenSSL-0.11
+
     [ -h /usr/lib/python2.7/site-packages/yenc.py ] || /bin/ln -sf ${QPKG_ROOT}/lib/yenc.py /usr/lib/python2.7/site-packages/yenc.py
     [ -h /usr/lib/python2.7/site-packages/_yenc.so ] || /bin/ln -sf ${QPKG_ROOT}/lib/_yenc.so /usr/lib/python2.7/site-packages/_yenc.so
     ;;
