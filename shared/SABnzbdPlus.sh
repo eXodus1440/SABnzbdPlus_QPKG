@@ -1,26 +1,21 @@
 #!/bin/sh
 CONF=/etc/config/qpkg.conf
+CMD_GETCFG="/sbin/getcfg"
+CMD_SETCFG="/sbin/setcfg"
+
 QPKG_NAME="SABnzbdPlus"
-QPKG_ROOT=`/sbin/getcfg $QPKG_NAME Install_Path -f ${CONF}`
-ENABLED=$(/sbin/getcfg $QPKG_NAME Enable -u -d FALSE -f $CONF)
-PUBLIC_SHARE=`/sbin/getcfg SHARE_DEF defPublic -d Public -f /etc/config/def_share.info`
-API_KEY=`/sbin/getcfg misc api_key -f ${QPKG_ROOT}/.sabnzbd/sabnzbd.ini`
-WEBUI_USER=`/sbin/getcfg misc username -f ${QPKG_ROOT}/.sabnzbd/sabnzbd.ini`
-WEBUI_PASS=`/sbin/getcfg misc password -f ${QPKG_ROOT}/.sabnzbd/sabnzbd.ini`
-SHUTDOWN_WAIT=25
-
+QPKG_ROOT=$(${CMD_GETCFG} ${QPKG_NAME} Install_Path -f ${CONF})
+PYTHON_DIR="/opt/bin"
+#PATH="${QPKG_ROOT}/bin:${QPKG_ROOT}/env/bin:${PYTHON_DIR}/bin:/usr/local/bin:/bin:/usr/bin:/usr/syno/bin"
+PYTHON="${PYTHON_DIR}/python2.7"
+SABNZBD="${QPKG_ROOT}/SABnzbd.py"
+QPKG_DATA=${QPKG_ROOT}/.sabnzbd
+QPKG_CONF=${QPKG_DATA}/sabnzbd.ini
+WEBUI_PORT=$(${CMD_GETCFG} misc port -f ${QPKG_CONF})
+QPKG_PID=${QPKG_ROOT}/sabnzbd-${WEBUI_PORT}.pid
 # Determine IP being used
-WEBUI_IP=`/sbin/getcfg misc host -f ${QPKG_ROOT}/.sabnzbd/sabnzbd.ini`
+WEBUI_IP=$(${CMD_GETCFG} misc host -f ${QPKG_CONF})
 if [ -z ${WEBUI_IP} ]; then WEBUI_IP="0.0.0.0" ; fi
-
-# Determine protocol & port being used
-WEBUI_HTTPS=$(/sbin/getcfg misc enable_https -f ${QPKG_ROOT}/.sabnzbd/sabnzbd.ini)
-if [ "$WEBUI_HTTPS" = "0" ]; then
-  WEBUI_PORT=`/sbin/getcfg misc port -f ${QPKG_ROOT}/.sabnzbd/sabnzbd.ini`
-else
-  WEBUI_PORT=`/sbin/getcfg misc https_port -f ${QPKG_ROOT}/.sabnzbd/sabnzbd.ini`
-fi
-if [ -z ${WEBUI_PORT} ]; then WEBUI_PORT=8085 ; fi # Default to port 8085
 
 # Determine BASE installation location according to smb.conf
 BASE=
@@ -48,22 +43,69 @@ if [ -z $BASE ] ; then
 fi
 ####
 
+start_daemon() {
+  ${PYTHON} ${SABNZBD} -s ${WEBUI_IP}:${WEBUI_PORT} -b 0 --pid ${QPKG_ROOT} -f ${QPKG_CONF} -d
+}
+
+stop_daemon() {
+  kill $(cat ${QPKG_PID})
+  wait_for_status 1 20
+  if [ -f ${QPKG_PID} ] ; then rm -f ${QPKG_PID} ; fi
+}
+
+daemon_status() {
+  if [ -f ${QPKG_PID} ] && [ -d /proc/$(cat ${QPKG_PID} 2>/dev/null) ]; then
+    return 0
+  fi
+  return 1
+}
+
+wait_for_status() {
+  counter=$2
+  while [ ${counter} -gt 0 ]; do
+    daemon_status
+    [ $? -eq $1 ] && break
+    let counter=counter-1
+    sleep 1
+  done
+}
+
 case "$1" in
   start)
-    # Check if enabled
-    #ENABLED=$(/sbin/getcfg $QPKG_NAME Enable -u -d FALSE -f $CONF)
-    if [ "$ENABLED" != "TRUE" ]; then
-      echo "$QPKG_NAME is disabled."
+    ENABLED=$(/sbin/getcfg ${QPKG_NAME} Enable -u -d FALSE -f $CONF)
+    if [ "${ENABLED}" != "TRUE" ]; then
+        echo "${QPKG_NAME} is disabled ..."
+        exit 1
+    fi
+    
+    if daemon_status; then
+      echo "${QPKG_NAME} is already running"
+    else
+      echo "Starting ${QPKG_NAME} ..."
+      start_daemon
+    fi
+    ;;
+
+  stop)
+    if daemon_status; then
+      echo "Stopping ${QPKG_NAME} ..."
+      stop_daemon
+    else
+      echo "${QPKG_NAME} is not running"
+    fi
+    ;;
+
+  status)
+    if daemon_status; then
+      echo "${QPKG_NAME} is running"
+      exit 0
+    else
+      echo "${QPKG_NAME} is not running"
       exit 1
     fi
+    ;;
 
-    # Check if instance already exist
-    if [ -f ${QPKG_ROOT}/sabnzbd-${WEBUI_PORT}.pid ]; then
-      echo "$QPKG_NAME is currently running or hasn't been shutdown properly."
-      echo "Please stop it before starting a new instance."
-      exit 1
-    fi
-
+  relink)
     # Create symlinks
     echo "Creating symlinks ..."
     [ -d ${QPKG_ROOT}/.sabnzbd/Downloads ] || /bin/ln -sf ${BASE}/${PUBLIC_SHARE}/Downloads ${QPKG_ROOT}/.sabnzbd/Downloads
@@ -74,53 +116,8 @@ case "$1" in
     [ -h /usr/bin/ionice ] || /bin/ln -sf ${QPKG_ROOT}/bin-utils/ionice /usr/bin/ionice
     [ -h /usr/bin/unrar ] || /bin/ln -sf /opt/bin/unrar /usr/bin/unrar
     [ -h /usr/bin/par2 ] || /bin/ln -sf /opt/bin/par2 /usr/bin/par2
-    [ -h /opt/lib/python2.6/site-packages/yenc.py ] || /bin/ln -sf ${QPKG_ROOT}/lib/yenc.py /opt/lib/python2.6/site-packages/yenc.py
-    [ -h /opt/lib/python2.6/site-packages/_yenc.so ] || /bin/ln -sf ${QPKG_ROOT}/lib/_yenc.so /opt/lib/python2.6/site-packages/_yenc.so
-
-    # Start SABnzbdPlus
-    /opt/bin/python2.6 ${QPKG_ROOT}/SABnzbd.py -s ${WEBUI_IP}:${WEBUI_PORT} -b 0 --pid ${QPKG_ROOT} -f /root/.sabnzbd/sabnzbd.ini -d
-
-    ;;
-
-  stop)
-    # Stop SABnzbdPlus
-    if [ -f "$QPKG_ROOT/sabnzbd-$WEBUI_PORT.pid" ]; then
-      PID=$(cat ${QPKG_ROOT}/sabnzbd-${WEBUI_PORT}.pid)
-      if [ `ps ax | grep -v grep | grep -c ${PID}` = '0' ]; then
-        echo "$QPKG_NAME not running, cleaning up ${QPKG_ROOT}/sabnzbd-${WEBUI_PORT}.pid ..."
-        /bin/rm -f ${QPKG_ROOT}/sabnzbd-$WEBUI_PORT.pid
-      else
-        echo "Stopping $QPKG_NAME ..."
-        WEBUI_PASS=`sed -e 's/^"//' -e 's/"$//' <<< $WEBUI_PASS`
-        if [ -n ${WEBUI_PASS} ]; then
-          /usr/bin/wget -q --delete-after "http://${WEBUI_IP}:${WEBUI_PORT}/sabnzbd/api?mode=shutdown&apikey=${API_KEY}" &
-        else
-          /usr/bin/wget -q --delete-after "http://${WEBUI_IP}:${WEBUI_PORT}/sabnzbd/api?mode=shutdown&ma_username=${WEBUI_USER}&ma_password=${WEBUI_PASS}&apikey=${API_KEY}" &
-        fi
-
-        # Waiting for SABnzbdPlus to shutdown gracefully
-        if [ -n ${PID} ]; then
-          KWAIT=${SHUTDOWN_WAIT}
-          COUNT=0
-          until [ `ps ax | grep -v grep | grep -c ${PID}` = '0' ] || [ "${COUNT}" -gt "${KWAIT}" ]
-          do
-            echo "Waiting ${COUNT}/${SHUTDOWN_WAIT} seconds for ${QPKG_NAME} processes to exit ..."
-            sleep 1
-            COUNT=$(( $COUNT + 1 ))
-          done
-        
-          # Killing SABnzbdPlus and par2 after SHUTDOWN_WAIT period
-          if [ "${COUNT}" -gt "${KWAIT}" ]; then
-            echo "Killing ${QPKG_NAME} processes which didn't stop after ${SHUTDOWN_WAIT} seconds"
-            kill -9 ${PID}
-            kill -9 `ps ax | grep 'par2' | grep -v grep | awk ' { print $1;}'`
-
-            # Clean up PIDFile
-            if [ -f ${QPKG_ROOT}/sabnzbd-$WEBUI_PORT.pid ] ; then /bin/rm -f ${QPKG_ROOT}/sabnzbd-$WEBUI_PORT.pid ; fi
-          fi
-        fi
-      fi
-    fi
+    [ -h /usr/lib/python2.7/site-packages/yenc.py ] || /bin/ln -sf ${QPKG_ROOT}/lib/yenc.py /usr/lib/python2.7/site-packages/yenc.py
+    [ -h /usr/lib/python2.7/site-packages/_yenc.so ] || /bin/ln -sf ${QPKG_ROOT}/lib/_yenc.so /usr/lib/python2.7/site-packages/_yenc.so
     ;;
 
   restart)
@@ -129,9 +126,8 @@ case "$1" in
     ;;
 
   *)
-    echo "Usage: $0 {start|stop|restart}"
+    echo "Usage: $0 {start|stop|status|relink|restart}"
     exit 1
 esac
 
 exit 0
-

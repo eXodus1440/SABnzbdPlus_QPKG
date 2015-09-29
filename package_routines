@@ -147,8 +147,8 @@ PKG_POST_REMOVE="{
   if [ -h /usr/bin/ionice ]; then $CMD_RM -f /usr/bin/ionice ; fi
   if [ -h /usr/bin/unrar ]; then $CMD_RM -f /usr/bin/unrar ; fi
   if [ -h /usr/bin/par2 ]; then $CMD_RM -f /usr/bin/par2 ; fi
-  if [ -h /opt/lib/python2.6/site-packages/yenc.py ]; then $CMD_RM -f /opt/lib/python2.6/site-packages/yenc.py ; fi
-  if [ -h /opt/lib/python2.6/site-packages/_yenc.so ]; then $CMD_RM -f /opt/lib/python2.6/site-packages/_yenc.so ; fi
+  if [ -h /usr/lib/python2.7/site-packages/yenc.py ]; then $CMD_RM -f /usr/lib/python2.7/site-packages/yenc.py ; fi
+  if [ -h /usr/lib/python2.7/site-packages/_yenc.so ]; then $CMD_RM -f /usr/lib/python2.7/site-packages/_yenc.so ; fi
 
   # Removing folders in Public share
   if [ -d ${BASE}/${PUBLIC_SHARE}/Downloads ]; then $CMD_RM -rf ${BASE}/${PUBLIC_SHARE}/Downloads ; fi
