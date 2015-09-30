@@ -204,7 +204,8 @@ pkg_install(){
   [ -h /usr/lib/python2.7/site-packages/_yenc.so ] || /bin/ln -sf ${QPKG_ROOT}/lib/_yenc.so /usr/lib/python2.7/site-packages/_yenc.so
 
   # Installing python modules
-  [ -d /usr/lib/python2.7/site-packages/Cheetah ] || cd ${QPKG_ROOT}/lib/Cheetah-2.4.4 ; ${PYTHON} setup.py install clean
+  cd ${QPKG_ROOT}/lib/Cheetah-2.4.4
+  [ -d /usr/lib/python2.7/site-packages/Cheetah ] || ${PYTHON} setup.py install clean >> /tmp/sabnzbd_install.log 2>&1
 
 }
 #
