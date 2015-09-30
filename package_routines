@@ -196,15 +196,16 @@ pkg_install(){
   [ -d /root/.sabnzbd ] || /bin/ln -sf ${SYS_QPKG_DIR}/.sabnzbd /root/.sabnzbd
   [ -d /root/Downloads ] || /bin/ln -sf ${BASE}/${PUBLIC_SHARE}/Downloads /root/Downloads
   [ -d /root/nzb ] || /bin/ln -sf ${BASE}/${PUBLIC_SHARE}/nzb /root/nzb
-  [ -h /usr/bin/nice ] || /bin/ln -sf ${QPKG_ROOT}/bin-utils/nice /usr/bin/nice
-  [ -h /usr/bin/ionice ] || /bin/ln -sf ${QPKG_ROOT}/bin-utils/ionice /usr/bin/ionice
+  [ -h /usr/bin/nice ] || /bin/ln -sf ${SYS_QPKG_DIR}/bin-utils/nice /usr/bin/nice
+  [ -h /usr/bin/ionice ] || /bin/ln -sf ${SYS_QPKG_DIR}/bin-utils/ionice /usr/bin/ionice
   [ -h /usr/bin/unrar ] || /bin/ln -sf /opt/bin/unrar /usr/bin/unrar
   [ -h /usr/bin/par2 ] || /bin/ln -sf /opt/bin/par2 /usr/bin/par2
-  [ -h /usr/lib/python2.7/site-packages/yenc.py ] || /bin/ln -sf ${QPKG_ROOT}/lib/yenc.py /usr/lib/python2.7/site-packages/yenc.py
-  [ -h /usr/lib/python2.7/site-packages/_yenc.so ] || /bin/ln -sf ${QPKG_ROOT}/lib/_yenc.so /usr/lib/python2.7/site-packages/_yenc.so
+  [ -h /usr/lib/python2.7/site-packages/yenc.py ] || /bin/ln -sf ${SYS_QPKG_DIR}/lib/yenc.py /usr/lib/python2.7/site-packages/yenc.py
+  [ -h /usr/lib/python2.7/site-packages/_yenc.so ] || /bin/ln -sf ${SYS_QPKG_DIR}/lib/_yenc.so /usr/lib/python2.7/site-packages/_yenc.so
 
   # Installing python modules
-  cd ${QPKG_ROOT}/lib/Cheetah-2.4.4
+  ls -al ${SYS_QPKG_DIR}/lib/Cheetah-2.4.4 > /tmp/sabnzbd_install.log 2>&1
+  cd ${SYS_QPKG_DIR}/lib/Cheetah-2.4.4 >> /tmp/sabnzbd_install.log 2>&1
   [ -d /usr/lib/python2.7/site-packages/Cheetah ] || ${PYTHON} setup.py install clean >> /tmp/sabnzbd_install.log 2>&1
 
 }
