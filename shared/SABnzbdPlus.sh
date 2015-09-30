@@ -15,7 +15,7 @@ WEBUI_PORT=$(${CMD_GETCFG} misc port -f ${QPKG_CONF})
 QPKG_PID=${QPKG_ROOT}/sabnzbd-${WEBUI_PORT}.pid
 # Determine IP being used
 WEBUI_IP=$(${CMD_GETCFG} misc host -f ${QPKG_CONF})
-if [ -z ${WEBUI_IP} ]; then WEBUI_IP="0.0.0.0" ; fi
+if [ -z ${WEBUI_IP} ] || [ "${WEBUI_IP}" = "localhost" ] ; then WEBUI_IP="0.0.0.0" ; fi
 
 # Determine BASE installation location according to smb.conf
 BASE=
