@@ -5,17 +5,18 @@ CMD_SETCFG="/sbin/setcfg"
 
 QPKG_NAME="SABnzbdPlus"
 QPKG_ROOT=$(${CMD_GETCFG} ${QPKG_NAME} Install_Path -f ${CONF})
-PYTHON_DIR="/usr/bin"
+PYTHON_DIR="/opt/bin"
 #PATH="${QPKG_ROOT}/bin:${QPKG_ROOT}/env/bin:${PYTHON_DIR}/bin:/usr/local/bin:/bin:/usr/bin:/usr/syno/bin"
-PYTHON="${PYTHON_DIR}/python2.7"
+PYTHON="${PYTHON_DIR}/python2.6"
 SABNZBD="${QPKG_ROOT}/SABnzbd.py"
 QPKG_DATA=${QPKG_ROOT}/.sabnzbd
 QPKG_CONF=${QPKG_DATA}/sabnzbd.ini
 WEBUI_PORT=$(${CMD_GETCFG} misc port -f ${QPKG_CONF})
+if [ -z ${WEBUI_PORT} ] ; then WEBUI_PORT="8085" ; fi # Default to port 8085
 QPKG_PID=${QPKG_ROOT}/sabnzbd-${WEBUI_PORT}.pid
 # Determine IP being used
 WEBUI_IP=$(${CMD_GETCFG} misc host -f ${QPKG_CONF})
-if [ -z ${WEBUI_IP} ] || [ "${WEBUI_IP}" = "localhost" ] ; then WEBUI_IP="0.0.0.0" ; fi
+if [ -z ${WEBUI_IP} ] || [ "${WEBUI_IP}" = "localhost" ] ; then WEBUI_IP="0.0.0.0" ; fi # Default to 0.0.0.0
 
 # Determine BASE installation location according to smb.conf
 BASE=
@@ -116,12 +117,8 @@ case "$1" in
     [ -h /usr/bin/ionice ] || /bin/ln -sf ${QPKG_ROOT}/bin-utils/ionice /usr/bin/ionice
     [ -h /usr/bin/unrar ] || /bin/ln -sf /opt/bin/unrar /usr/bin/unrar
     [ -h /usr/bin/par2 ] || /bin/ln -sf /opt/bin/par2 /usr/bin/par2
-
-    #[ -h /usr/lib/python2.7/site-packages/Cheetah-2.4.4 ] || /bin/ln -sf ${QPKG_ROOT}/lib/Cheetah-2.4.4 /usr/lib/python2.7/site-packages/Cheetah-2.4.4
-    #[ -h /usr/lib/python2.7/site-packages/pyOpenSSL-0.11 ] || /bin/ln -sf ${QPKG_ROOT}/lib/pyOpenSSL-0.11 /usr/lib/python2.7/site-packages/pyOpenSSL-0.11
-
-    [ -h /usr/lib/python2.7/site-packages/yenc.py ] || /bin/ln -sf ${QPKG_ROOT}/lib/yenc.py /usr/lib/python2.7/site-packages/yenc.py
-    [ -h /usr/lib/python2.7/site-packages/_yenc.so ] || /bin/ln -sf ${QPKG_ROOT}/lib/_yenc.so /usr/lib/python2.7/site-packages/_yenc.so
+    [ -h /opt/lib/python2.6/site-packages/yenc.py ] || /bin/ln -sf ${QPKG_ROOT}/lib/yenc.py /opt/lib/python2.6/site-packages/yenc.py
+    [ -h /opt/lib/python2.6/site-packages/_yenc.so ] || /bin/ln -sf ${QPKG_ROOT}/lib/_yenc.so /opt/lib/python2.6/site-packages/_yenc.so
     ;;
 
   restart)

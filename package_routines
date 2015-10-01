@@ -150,15 +150,15 @@ PKG_POST_REMOVE="{
   if [ -h /usr/bin/ionice ]; then $CMD_RM -f /usr/bin/ionice ; fi
   if [ -h /usr/bin/unrar ]; then $CMD_RM -f /usr/bin/unrar ; fi
   if [ -h /usr/bin/par2 ]; then $CMD_RM -f /usr/bin/par2 ; fi
-  if [ -h /usr/lib/python2.7/site-packages/yenc.py ]; then $CMD_RM -f /usr/lib/python2.7/site-packages/yenc.py ; fi
-  if [ -h /usr/lib/python2.7/site-packages/_yenc.so ]; then $CMD_RM -f /usr/lib/python2.7/site-packages/_yenc.so ; fi
+  if [ -h /opt/lib/python2.6/site-packages/yenc.py ]; then $CMD_RM -f /opt/lib/python2.6/site-packages/yenc.py ; fi
+  if [ -h /opt/lib/python2.6/site-packages/_yenc.so ]; then $CMD_RM -f /opt/lib/python2.6/site-packages/_yenc.so ; fi
 
   # Removing folders in Public share
   if [ -d ${BASE}/${PUBLIC_SHARE}/Downloads ]; then $CMD_RM -rf ${BASE}/${PUBLIC_SHARE}/Downloads ; fi
   if [ -d ${BASE}/${PUBLIC_SHARE}/nzb ]; then $CMD_RM -rf ${BASE}/${PUBLIC_SHARE}/nzb ; fi
 
   # Removing python libs
-  if [ -d /usr/lib/python2.7/site-packages/Cheetah ] ; then $CMD_RM -rf /usr/lib/python2.7/site-packages/Cheetah* ; fi
+  #if [ -d /usr/lib/python2.7/site-packages/Cheetah ] ; then $CMD_RM -rf /usr/lib/python2.7/site-packages/Cheetah* ; fi
 
 }"
 #
@@ -200,13 +200,16 @@ pkg_install(){
   [ -h /usr/bin/ionice ] || /bin/ln -sf ${SYS_QPKG_DIR}/bin-utils/ionice /usr/bin/ionice
   [ -h /usr/bin/unrar ] || /bin/ln -sf /opt/bin/unrar /usr/bin/unrar
   [ -h /usr/bin/par2 ] || /bin/ln -sf /opt/bin/par2 /usr/bin/par2
-  [ -h /usr/lib/python2.7/site-packages/yenc.py ] || /bin/ln -sf ${SYS_QPKG_DIR}/lib/yenc.py /usr/lib/python2.7/site-packages/yenc.py
-  [ -h /usr/lib/python2.7/site-packages/_yenc.so ] || /bin/ln -sf ${SYS_QPKG_DIR}/lib/_yenc.so /usr/lib/python2.7/site-packages/_yenc.so
+  [ -h /opt/lib/python2.6/site-packages/yenc.py ] || /bin/ln -sf ${SYS_QPKG_DIR}/lib/yenc.py /usr/lib/python2.6/site-packages/yenc.py
+  [ -h /opt/lib/python2.6/site-packages/_yenc.so ] || /bin/ln -sf ${SYS_QPKG_DIR}/lib/_yenc.so /usr/lib/python2.6/site-packages/_yenc.so
 
   # Installing python modules
-  ls -al ${SYS_QPKG_DIR}/lib/Cheetah-2.4.4 > /tmp/sabnzbd_install.log 2>&1
-  cd ${SYS_QPKG_DIR}/lib/Cheetah-2.4.4 >> /tmp/sabnzbd_install.log 2>&1
-  [ -d /usr/lib/python2.7/site-packages/Cheetah ] || ${PYTHON} setup.py install clean >> /tmp/sabnzbd_install.log 2>&1
+  #ls -al ${SYS_QPKG_DIR}/lib/Cheetah-2.4.4 > /tmp/sabnzbd_install.log 2>&1
+  #cd ${SYS_QPKG_DIR}/lib/Cheetah-2.4.4 >> /tmp/sabnzbd_install.log 2>&1
+  #[ -d /usr/lib/python2.7/site-packages/Cheetah ] || ${PYTHON} setup.py install clean >> /tmp/sabnzbd_install.log 2>&1
+
+  #cd ${SYS_QPKG_DIR}/lib/pyOpenSSL-0.11 >> /tmp/sabnzbd_install.log 2>&1
+  #[ -d /usr/lib/python2.7/site-packages/Cheetah ] || ${PYTHON} setup.py install clean >> /tmp/sabnzbd_install.log 2>&1
 
 }
 #
