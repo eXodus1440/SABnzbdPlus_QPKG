@@ -183,7 +183,7 @@ PKG_POST_REMOVE="{
 pkg_pre_install(){
 
   # Create folders in Public share
-  [ -d ${BASE}/${PUBLIC_SHARE}/Downloads ] || $CMD_MKDIR -p ${BASE}/${PUBLIC_SHARE}/Downloads/complete ${BASE}/${PUBLIC_SHARE}/Downloads/incomplete
+  [ -d ${BASE}/${PUBLIC_SHARE}/Downloads ] || $CMD_MKDIR -p ${BASE}/${PUBLIC_SHARE}/Downloads/complete/Movies ${BASE}/${PUBLIC_SHARE}/Downloads/complete/TV ${BASE}/${PUBLIC_SHARE}/Downloads/incomplete
   [ -d ${BASE}/${PUBLIC_SHARE}/nzb ] || $CMD_MKDIR ${BASE}/${PUBLIC_SHARE}/nzb
   [ -d ${SYS_QPKG_DIR}/.sabnzbd ] || $CMD_MKDIR -p ${SYS_QPKG_DIR}/.sabnzbd/nzb ${SYS_QPKG_DIR}/.sabnzbd/admin ${SYS_QPKG_DIR}/.sabnzbd/cache ${SYS_QPKG_DIR}/.sabnzbd/logs
 
