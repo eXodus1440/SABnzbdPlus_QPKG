@@ -93,6 +93,7 @@ case "$1" in
       stop_daemon
     else
       echo "${QPKG_NAME} is not running"
+      if [ -f ${QPKG_PID} ] ; then rm -f ${QPKG_PID} ; fi
     fi
     ;;
 
